@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<canvas width="960" height="500"></canvas>
+<script src="./bezier.js"></script>
+<script>
+
+    var points = [
+        [180,  15],
+        [270,  73],
+        [360, 293]
+    ];
+
+    var canvas = document.querySelector("canvas"),
+            context = canvas.getContext("2d");
+
+    var margin = {top: 30, right: 30, bottom: 30, left: 30},
+            width = canvas.width - margin.left - margin.right,
+            height = canvas.height - margin.top - margin.bottom,
+            radius = 3.5;
+
+    context.translate(margin.left, margin.top);
+
+    context.globalCompositeOperation = 'destination-over';
+
+    context.beginPath();
+    var Cpoint = points[1];
+
+    var cirleOne = [Cpoint[0] + radius - 45, Cpoint[1]];
+    var cirleTwo = [Cpoint[0] + radius + 45, Cpoint[1]];
+
+    var Cpoints = [];
+
+    context.moveTo(cirleOne[0], cirleOne[1]);
+    Cpoints.push(cirleOne);
+    context.lineTo(cirleTwo[0], cirleTwo[1]);
+    Cpoints.push(cirleTwo);
+
+    context.lineWidth = 1;
+    context.fill();
+    context.stroke();
+
+    context.globalCompositeOperation = 'source-over';
+    context.beginPath();
+
+    Cpoints.forEach(function(d) {
+        context.moveTo(d[0] + radius, d[1]);
+        context.arc(d[0], d[1], 4, 2 * Math.PI, 0, true);
+        context.fillStyle = "rgb(255,255,255)";
+        context.strokeStyle = 'rgb(255,20,20,0)';
+        context.lineWidth = 2;
+        context.fill();
+        context.stroke();
+    });
+
+    //==================================================================
+
+    var curve = new Bezier(150,40 , 80,30 , 105,150);
+
+    context.beginPath();
+    // Splines
+    context.moveTo(points[0][0], points[0][1]);
+
+    for (var i = 1; i < points.length ; i++) {
+        if ( Cpoints.length > 0 ) {
+            var cp = Cpoints[i-1];
+            var cp2 = i === 1 ? Cpoints[i] : Cpoints[i-2];
+            context.bezierCurveTo(cp[0],cp[1],cp2[0],cp2[1],points[i][0], points[i][1]);
+        } else {
+            context.lineTo(points[i][0], points[i][1]);
+        }
+    }
+
+    context.fillStyle = "transparent";
+    context.strokeStyle = 'rgb(255,20,20)';
+    context.lineWidth = 2;
+    context.fill();
+    context.stroke();
+
+    //==================================================================
+
+    context.globalCompositeOperation = 'source-over';
+    context.beginPath();
+    // Points
+    points.forEach(function(d) {
+        context.moveTo(d[0] + radius, d[1]);
+        context.arc(d[0], d[1], 4, 2 * Math.PI, 0, true);
+        context.fillStyle = "rgb(255,255,255)";
+        context.strokeStyle = 'rgb(255,20,20,0)';
+        context.lineWidth = 2;
+        context.fill();
+        context.stroke();
+    });
+
+</script>
