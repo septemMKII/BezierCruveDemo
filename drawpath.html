@@ -78,11 +78,10 @@
 
     //==================================================================
 
-    context.globalCompositeOperation = 'source-over';
     context.beginPath();
     // Points
     points.forEach(function(d) {
-        context.moveTo(d[0] + radius, d[1]);
+        context.moveTo(d[0] + 4, d[1]);
         context.arc(d[0], d[1], 4, 2 * Math.PI, 0, true);
         context.fillStyle = "rgb(255,255,255)";
         context.strokeStyle = 'rgb(255,20,20,0)';

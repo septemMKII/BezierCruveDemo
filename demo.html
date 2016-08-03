@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+
+</head>
+<body>
+<canvas id="demo"  width="800" height="600"></canvas>
+<script src="./jquery-3.1.0.min.js"></script>
+<script src="./bezier.js"></script>
+<script>
+    (function() {
+        var points = [
+        ];
+
+        var $canvas = $("#demo"),
+            canvas = $canvas[0],
+            context = canvas.getContext("2d");
+
+        var activePoint, mouseMove, mouseDown;
+
+        mouseMove = function ( e ) {
+            e.preventDefault();
+            var x, y;
+
+            fix( e );
+            x = e.offsetX; y = e.offsetY;
+            activePoint = {
+                x: x,
+                y: y,
+                isBezier: false
+            };
+
+            if ( points.length > 0 ) draw(activePoint);
+        };
+
+        mouseDown = function ( e ) {
+            e.preventDefault();
+            var x, y;
+
+            if (e.which === 3) {
+                return false;
+            }
+
+            fix( e );
+            x = e.offsetX; y = e.offsetY;
+
+            points.push({
+                x: x,
+                y: y,
+                isBezier: false
+            });
+
+            draw();
+        };
+
+        function draw( activePoint ) {
+            context.canvas.width = context.canvas.width;
+            points.forEach(function( d , index ) {
+                if (points[ index + 1 ]) {
+                    drawLine(d, points[ index + 1 ]);
+                } else if ( activePoint ) {
+                    drawLine(d, activePoint);
+                }
+                drawPoint(d);
+            });
+        }
+
+        function drawLine(p1, p2) {
+            context.beginPath();
+            context.moveTo(p1.x, p1.y);
+            context.lineTo(p2.x, p2.y);
+            context.lineWidth = 2;
+            context.stroke();
+        }
+
+        function drawPoint(d) {
+            context.beginPath();
+            // Points
+            context.moveTo(d.x + 8, d.y);
+            context.arc(d.x, d.y, 8, 2 * Math.PI, 0, true);
+            context.fillStyle = "rgb(255,255,255)";
+            context.strokeStyle = 'rgb(255,20,20,0)';
+            context.lineWidth = 2;
+            context.fill();
+            context.stroke();
+        }
+
+        var fix = function(e) {
+            e = e || window.event;
+            if(!e.offsetX) {
+                e.offsetX = (e.pageX - $(e.target).offset().left);
+                e.offsetY = (e.pageY - $(e.target).offset().top);
+            }
+        };
+
+        $canvas.on('mousedown', mouseDown);
+        $canvas.on('mousemove', mouseMove);
+    })( window );
+</script>
+</body>
+</html>
