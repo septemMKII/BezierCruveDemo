@@ -113,11 +113,11 @@
 
             guides = [ moveToPosition , lineToPosition ];
 
+            drawLine.apply( this, guides );
+
             guides.forEach( function( d ) {
                 drawPoint( d );
             } );
-
-            drawLine.apply( this, guides );
         }
 
         function drawLine( p1, p2 ) {
