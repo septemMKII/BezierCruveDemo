@@ -40,7 +40,13 @@
 
             canvas.style.cursor = found ? "pointer" : "default";
 
-            if ( points.length > 0 ) draw(activePoint);
+            if ( points.length > 0 ) {
+                if ( found ) {
+                    draw()
+                } else {
+                    draw( activePoint );
+                }
+            }
         };
 
         mouseDown = function ( e ) {
@@ -82,16 +88,28 @@
             context.canvas.width = context.canvas.width;
             if ( foundPoint ) drawCurveGuides( foundPoint );
             points.forEach(function( d , index ) {
-                if ( d.isBezier ) {
+                var frontPoint = points[ index - 1 ];
+                var afterPoint = points[ index + 1 ];
 
-                } else {
-                    if (points[ index + 1 ]) {
-                        drawLine( d, points[ index + 1 ] );
-                    } else if ( activePoint ) {
-                        drawLine( d, activePoint );
+                var controlPoint;
+                if ( afterPoint && afterPoint.isBezier ) {
+                    controlPoint = guides[0];
+                    drawBezierCurve( new Bezier(afterPoint.x,afterPoint.y ,controlPoint.x,controlPoint.y ,d.x,d.y) )
+                } else if ( frontPoint && frontPoint.isBezier ) {
+                    controlPoint = guides[1];
+                    drawBezierCurve( new Bezier(d.x,d.y ,controlPoint.x,controlPoint.y ,frontPoint.x,frontPoint.y) )
+                } else if ( !d.isBezier ) {
+                    if ( afterPoint ) {
+                        drawLine( d, afterPoint );
                     }
                 }
+            });
 
+            if ( activePoint ) {
+                drawLine( points[ points.length - 1 ], activePoint );
+            }
+
+            points.forEach( function( d ) {
                 drawPoint( d );
             });
         }
@@ -120,6 +138,17 @@
             } );
         }
 
+        function drawBezierCurve( curve ) {
+            context.beginPath();
+            var p = curve.points;
+            context.moveTo( p[ 0 ].x, p[ 0 ].y );
+            context.quadraticCurveTo(
+                    p[ 1 ].x, p[ 1 ].y,
+                    p[ 2 ].x, p[ 2 ].y
+            );
+            context.stroke();
+        }
+
         function drawLine( p1, p2 ) {
             context.beginPath();
             context.moveTo( p1.x, p1.y );
@@ -131,8 +160,8 @@
         function drawPoint( d ) {
             context.beginPath();
             // Points
-            context.moveTo( d.x + 8, d.y );
-            context.arc( d.x, d.y, 8, 2 * Math.PI, 0, true );
+            context.moveTo( d.x + 3, d.y );
+            context.arc( d.x, d.y, 3, 2 * Math.PI, 0, true );
             context.fillStyle = "rgb(255,255,255)";
             context.strokeStyle = 'rgb(255,20,20,0)';
             context.lineWidth = 2;
