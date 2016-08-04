@@ -33,7 +33,6 @@
     </p>
     <input id="json-text" type="text"  title="json框"/>
 <script src="./jquery-3.1.0.min.js"></script>
-<script src="./bezier.js"></script>
 <script>
     (function() {
 
@@ -198,7 +197,7 @@
 
                     if ( d.berzierPoint ) {
                         controlPoint = d.berzierPoint;
-                        drawBezierCurve( new Bezier(afterPoint.x, afterPoint.y, controlPoint.x, controlPoint.y, d.x, d.y) );
+                        drawBezierCurve( afterPoint, controlPoint, d );
                     } else if ( afterPoint ) {
                         drawLine( d, afterPoint );
                     }
@@ -255,13 +254,12 @@
                 }
             }
 
-            function drawBezierCurve( curve ) {
+            function drawBezierCurve( p1, p2 ,p3 ) {
                 context.beginPath();
-                var p = curve.points;
-                context.moveTo( p[ 0 ].x, p[ 0 ].y );
+                context.moveTo( p1.x, p1.y );
                 context.quadraticCurveTo(
-                        p[ 1 ].x, p[ 1 ].y,
-                        p[ 2 ].x, p[ 2 ].y
+                        p2.x, p2.y,
+                        p3.x, p3.y
                 );
                 context.stroke();
             }
