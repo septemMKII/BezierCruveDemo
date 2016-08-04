@@ -57,34 +57,28 @@
 
                     changeGuides = guides[ 0 ];
 
-                    guides[ 1 ] = {
-                        x: x,
-                        y: y
-                    };
-                    guides[ 0 ] = {
-                        x: changeGuides.x + diffX,
-                        y: changeGuides.y + diffY
-                    }
+                    guides[ 1 ].x = x;
+                    guides[ 1 ].y = y;
+
+                    guides[ 0 ].x = changeGuides.x + diffX;
+                    guides[ 0 ].y = changeGuides.y + diffY;
+
                 } else {
                     diffX = x - guides[ 0 ].x;
                     diffY = y - guides[ 0 ].y;
 
                     changeGuides = guides[ 1 ];
 
-                    guides[ 0 ] = {
-                        x: x,
-                        y: y
-                    };
+                    guides[ 0 ].x = x;
+                    guides[ 0 ].y = y;
 
-                    guides[ 1 ] = {
-                        x: changeGuides.x - diffX,
-                        y: changeGuides.y - diffY
-                    };
+                    guides[ 1 ].x = changeGuides.x - diffX;
+                    guides[ 1 ].y = changeGuides.y - diffY;
                 }
             }
             
             if ( points.length > 0 ) {
-                if ( found ) {
+                if ( found || guidesFound ) {
                     draw()
                 } else {
                     draw( activePoint );
@@ -132,6 +126,8 @@
                 } else {
                     console.log( 'default trigger ' );
                 }
+            } else if ( guidesFound ) {
+                console.log( 'default trigger ' );
             } else {
                 points.push({
                     x: x,
@@ -175,28 +171,35 @@
         function drawCurveGuides () {
 
             if ( foundPoint && guides.length === 0 ) {
-                console.log('0');
                 var index = points.indexOf( foundPoint );
                 var frontPoint = points[ index - 1 ];
                 var afterPoint = points[ index + 1 ];
 
+                var a = afterPoint.x - frontPoint.x;
+                var b = afterPoint.y - frontPoint.y;
+
+                var c = Math.sqrt( a * a + b * b );
+
+                var sinA = b / c;
+                var cosA = a / c;
+
+                var ax = ( c * .7 / 2 ) * sinA;
+                var ay = ( c * .7 / 2 ) * cosA;
+
                 var moveToPosition = {
-                    x: frontPoint.x + (( foundPoint.x - frontPoint.x) / 2 ),
-                    y: foundPoint.y
+                    x: foundPoint.x - ay,
+                    y: foundPoint.y - ax
                 };
 
                 var lineToPosition = {
-                    x: afterPoint.x - (( afterPoint.x - foundPoint.x ) / 2 ),
-                    y: foundPoint.y
+                    x:  foundPoint.x + ay,
+                    y:  foundPoint.y + ax
                 };
 
                 guides = [ moveToPosition , lineToPosition ];
             }
 
             if ( guides.length === 2 ) {
-
-                console.log(JSON.stringify(guides[0]),JSON.stringify(guides[1]));
-
                 drawLine.apply( this, guides );
 
                 guides.forEach( function( d ) {
