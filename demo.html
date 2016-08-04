@@ -18,11 +18,11 @@
             canvas = $canvas[ 0 ],
             context = canvas.getContext( "2d" );
 
-        var activePoint, mouseMove, mouseDown, foundPoint;
+        var activePoint, mouseMove, mouseDown, mouseUp, foundPoint, foundGuidePointIndex, moving = false;
 
         mouseMove = function ( e ) {
             e.preventDefault();
-            var x, y, found = false;
+            var x, y, found = false, guidesFound = false;
 
             fix( e );
             x = e.offsetX; y = e.offsetY;
@@ -38,8 +38,51 @@
                 }
             } );
 
-            canvas.style.cursor = found ? "pointer" : "default";
+            guides.forEach( function( d ) {
+                if ( Math.abs( x - d.x ) < 10 && Math.abs( y - d.y ) < 10 ) {
+                    guidesFound = guidesFound || true;
+                }
+            } );
 
+            canvas.style.cursor = found || guidesFound ? "pointer" : "default";
+
+            if ( moving && foundGuidePointIndex !== -1) {
+
+                var diffX, diffY, changeGuides;
+
+                if ( foundGuidePointIndex === 1 ) {
+
+                    diffX = guides[ 1 ].x - x;
+                    diffY = guides[ 1 ].y - y;
+
+                    changeGuides = guides[ 0 ];
+
+                    guides[ 1 ] = {
+                        x: x,
+                        y: y
+                    };
+                    guides[ 0 ] = {
+                        x: changeGuides.x + diffX,
+                        y: changeGuides.y + diffY
+                    }
+                } else {
+                    diffX = x - guides[ 0 ].x;
+                    diffY = y - guides[ 0 ].y;
+
+                    changeGuides = guides[ 1 ];
+
+                    guides[ 0 ] = {
+                        x: x,
+                        y: y
+                    };
+
+                    guides[ 1 ] = {
+                        x: changeGuides.x - diffX,
+                        y: changeGuides.y - diffY
+                    };
+                }
+            }
+            
             if ( points.length > 0 ) {
                 if ( found ) {
                     draw()
@@ -49,9 +92,16 @@
             }
         };
 
+        mouseUp = function ( e ) {
+            e.preventDefault();
+            if(!moving) return;
+            moving = false;
+            foundGuidePointIndex = -1;
+        };
+
         mouseDown = function ( e ) {
             e.preventDefault();
-            var x, y, found = false;
+            var x, y, found = false, guidesFound = false;
 
             if ( e.which === 3 ) {
                 return false;
@@ -63,7 +113,16 @@
             points.forEach( function( d, index ) {
                 if ( Math.abs( x - d.x ) < 10 && Math.abs( y - d.y ) < 10 ) {
                     found = found || true;
+                    moving = true;
                     if ( points[ index - 1 ] && points[ index + 1 ] ) foundPoint = d;
+                }
+            } );
+
+            guides.forEach( function( d , index ) {
+                if ( Math.abs( x - d.x ) < 10 && Math.abs( y - d.y ) < 10 ) {
+                    guidesFound = guidesFound || true;
+                    moving = true;
+                    foundGuidePointIndex = index;
                 }
             } );
 
@@ -86,25 +145,24 @@
 
         function draw( activePoint ) {
             context.canvas.width = context.canvas.width;
-            if ( foundPoint ) drawCurveGuides( foundPoint );
+            drawCurveGuides();
             points.forEach(function( d , index ) {
-                var frontPoint = points[ index - 1 ];
-                var afterPoint = points[ index + 1 ];
+                var frontPoint = points[index - 1];
+                var afterPoint = points[index + 1];
 
                 var controlPoint;
-                if ( afterPoint && afterPoint.isBezier ) {
+                if (afterPoint && afterPoint.isBezier) {
                     controlPoint = guides[0];
-                    drawBezierCurve( new Bezier(afterPoint.x,afterPoint.y ,controlPoint.x,controlPoint.y ,d.x,d.y) )
-                } else if ( frontPoint && frontPoint.isBezier ) {
+                    drawBezierCurve(new Bezier(afterPoint.x, afterPoint.y, controlPoint.x, controlPoint.y, d.x, d.y))
+                } else if (frontPoint && frontPoint.isBezier) {
                     controlPoint = guides[1];
-                    drawBezierCurve( new Bezier(d.x,d.y ,controlPoint.x,controlPoint.y ,frontPoint.x,frontPoint.y) )
-                } else if ( !d.isBezier ) {
-                    if ( afterPoint ) {
-                        drawLine( d, afterPoint );
+                    drawBezierCurve(new Bezier(d.x, d.y, controlPoint.x, controlPoint.y, frontPoint.x, frontPoint.y))
+                } else if (!d.isBezier) {
+                    if (afterPoint) {
+                        drawLine(d, afterPoint);
                     }
                 }
             });
-
             if ( activePoint ) {
                 drawLine( points[ points.length - 1 ], activePoint );
             }
@@ -114,28 +172,37 @@
             });
         }
 
-        function drawCurveGuides ( foundPoint ) {
-            var index = points.indexOf( foundPoint );
-            var frontPoint = points[ index - 1 ];
-            var afterPoint = points[ index + 1 ];
+        function drawCurveGuides () {
 
-            var moveToPosition = {
-                x: frontPoint.x + (( foundPoint.x - frontPoint.x) / 2 ),
-                y: foundPoint.y
-            };
+            if ( foundPoint && guides.length === 0 ) {
+                console.log('0');
+                var index = points.indexOf( foundPoint );
+                var frontPoint = points[ index - 1 ];
+                var afterPoint = points[ index + 1 ];
 
-            var lineToPosition = {
-                x: afterPoint.x - (( afterPoint.x - foundPoint.x ) / 2 ),
-                y: foundPoint.y
-            };
+                var moveToPosition = {
+                    x: frontPoint.x + (( foundPoint.x - frontPoint.x) / 2 ),
+                    y: foundPoint.y
+                };
 
-            guides = [ moveToPosition , lineToPosition ];
+                var lineToPosition = {
+                    x: afterPoint.x - (( afterPoint.x - foundPoint.x ) / 2 ),
+                    y: foundPoint.y
+                };
 
-            drawLine.apply( this, guides );
+                guides = [ moveToPosition , lineToPosition ];
+            }
 
-            guides.forEach( function( d ) {
-                drawPoint( d );
-            } );
+            if ( guides.length === 2 ) {
+
+                console.log(JSON.stringify(guides[0]),JSON.stringify(guides[1]));
+
+                drawLine.apply( this, guides );
+
+                guides.forEach( function( d ) {
+                    drawPoint( d );
+                } );
+            }
         }
 
         function drawBezierCurve( curve ) {
@@ -178,6 +245,7 @@
         };
 
         $canvas.on( 'mousedown', mouseDown );
+        $canvas.on( 'mouseup', mouseUp );
         $canvas.on( 'mousemove', mouseMove );
     })( window );
 </script>
