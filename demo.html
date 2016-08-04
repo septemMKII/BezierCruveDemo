@@ -276,7 +276,6 @@
 
             function drawPoint( d ) {
                 context.beginPath();
-                // Points
                 context.moveTo( d.x + 3, d.y );
                 context.arc( d.x, d.y, 3, 2 * Math.PI, 0, true );
                 context.fillStyle = "rgb(255,255,255)";
@@ -288,6 +287,7 @@
 
             var fix = function( e ) {
                 e = e || window.event;
+
                 if( !e.offsetX ) {
                     e.offsetX = ( e.pageX - $( e.target ).offset().left );
                     e.offsetY = ( e.pageY - $( e.target ).offset().top );
@@ -297,10 +297,12 @@
             $canvas.on( 'mousedown', mouseDown );
             $canvas.on( 'mouseup', mouseUp );
             $canvas.on( 'mousemove', mouseMove );
+
             $( '#export').on( 'click', function( e ) {
                 e.preventDefault();
                 $( '#json-text').val( JSON.stringify( points ) );
             });
+
             $( '#clear').on( 'click', function( e ) {
                 e.preventDefault();
                 points = [];
@@ -309,6 +311,7 @@
                 foundGuidePointIndex = -1;
                 context.clearRect( 0, 0, canvas.width, canvas.height);
             });
+
             $( '#import').on( 'click', function( e ) {
                 e.preventDefault();
                 points = JSON.parse( $( '#json-text').val() );
