@@ -3,22 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <style>
+        #demo {
+            margin-left: 5rem;
+            margin-top: 5rem;
+            border: 1px solid #cccccc
+        }
 
+        p {
+            margin-left: 5rem;
+            margin-top: .5rem;
+        }
+
+        #json-text {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-<canvas id="demo"  width="800" height="600" style="margin-left: 5rem; margin-top: 5rem; border: 1px solid #cccccc"></canvas>
-<p>
-    <button id="export">导出json</button>
-</p>
-<p>
-    <button id="clear">清除canvas</button>
-</p>
-<p>
-    <button id="import">导入json</button>
-</p>
-<p>
-    <input id="json-text" type="text"  title="json框" style="width: 100%"/>
-</p>
+    <canvas id="demo"  width="800" height="600"></canvas>
+    <p>
+        <button id="export">导出json</button>
+    </p>
+    <p>
+        <button id="clear">清除canvas</button>
+    </p>
+    <p>
+        <button id="import">导入json</button>
+    </p>
+    <input id="json-text" type="text"  title="json框"/>
 <script src="./jquery-3.1.0.min.js"></script>
 <script src="./bezier.js"></script>
 <script>
@@ -267,6 +280,10 @@
             });
             $( '#clear').on( 'click', function( e ) {
                 e.preventDefault();
+                points = [];
+                guides = [];
+                foundPoint = undefined;
+                foundGuidePointIndex = -1;
                 context.clearRect( 0, 0, canvas.width, canvas.height);
             });
             $( '#import').on( 'click', function( e ) {
